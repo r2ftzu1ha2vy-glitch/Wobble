@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>WOBBLE</title>
+<link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+  <!-- ======================= MAIN MENU ======================= -->
+  <div id="screen-main" class="screen active">
+    <div class="menu-bg-canvas-wrap">
+      <canvas id="menu-bg-canvas"></canvas>
+    </div>
+    <div class="menu-content">
+      <h1 class="wobble-title">WOBBLE</h1>
+      <p class="wobble-subtitle">a tower of trust, one block at a time</p>
+      <div class="menu-buttons">
+        <button class="btn btn-primary" id="btn-play-solo">PLAY SOLO</button>
+        <button class="btn btn-primary" id="btn-multiplayer">MULTIPLAYER</button>
+        <button class="btn btn-secondary" id="btn-settings">SETTINGS</button>
+      </div>
+      <div class="menu-footer">v1.0 · made with wood &amp; wobbles</div>
+    </div>
+  </div>
+
+  <!-- ======================= SETTINGS ======================= -->
+  <div id="screen-settings" class="screen">
+    <div class="panel">
+      <h2>SETTINGS</h2>
+      <div class="settings-row">
+        <label for="opt-username">Username</label>
+        <input type="text" id="opt-username" maxlength="14" placeholder="Player" />
+      </div>
+      <div class="settings-row">
+        <label for="opt-sfx">SFX Volume</label>
+        <input type="range" id="opt-sfx" min="0" max="100" value="80" />
+      </div>
+      <div class="settings-row">
+        <label for="opt-music">Music Volume</label>
+        <input type="range" id="opt-music" min="0" max="100" value="40" />
+      </div>
+      <div class="settings-row">
+        <label for="opt-sensitivity">Mouse Sensitivity</label>
+        <input type="range" id="opt-sensitivity" min="10" max="200" value="100" />
+      </div>
+      <div class="settings-row settings-row-toggle">
+        <label for="opt-shadows">Soft Shadows</label>
+        <input type="checkbox" id="opt-shadows" checked />
+      </div>
+      <button class="btn btn-secondary" id="btn-settings-back">BACK</button>
+    </div>
+  </div>
+
+  <!-- ======================= MULTIPLAYER MENU ======================= -->
+  <div id="screen-multiplayer" class="screen">
+    <div class="panel">
+      <h2>MULTIPLAYER</h2>
+      <div class="menu-buttons">
+        <button class="btn btn-primary" id="btn-create-room">CREATE ROOM</button>
+        <button class="btn btn-primary" id="btn-join-room">JOIN ROOM</button>
+      </div>
+      <button class="btn btn-secondary" id="btn-mp-back">BACK</button>
+    </div>
+  </div>
+
+  <!-- ======================= JOIN ROOM ======================= -->
+  <div id="screen-join" class="screen">
+    <div class="panel">
+      <h2>ENTER ROOM CODE</h2>
+      <div class="code-input-row">
+        <input maxlength="1" class="code-box" data-idx="0" />
+        <input maxlength="1" class="code-box" data-idx="1" />
+        <input maxlength="1" class="code-box" data-idx="2" />
+        <input maxlength="1" class="code-box" data-idx="3" />
+      </div>
+      <p id="join-error" class="error-text"></p>
+      <button class="btn btn-primary" id="btn-do-join">JOIN ROOM</button>
+      <button class="btn btn-secondary" id="btn-join-back">BACK</button>
+    </div>
+  </div>
+
+  <!-- ======================= LOBBY ======================= -->
+  <div id="screen-lobby" class="screen">
+    <div class="panel">
+      <h2>ROOM: <span id="lobby-code">----</span></h2>
+      <div id="lobby-players" class="lobby-players"></div>
+      <p id="lobby-hint" class="hint-text">Waiting for host to start&hellip;</p>
+      <button class="btn btn-primary" id="btn-start-game" style="display:none;">START GAME</button>
+      <button class="btn btn-secondary" id="btn-lobby-leave">LEAVE ROOM</button>
+    </div>
+  </div>
+
+  <!-- ======================= GAME HUD / CANVAS ======================= -->
+  <div id="screen-game" class="screen">
+    <canvas id="game-canvas"></canvas>
+
+    <!-- crosshair -->
+    <div id="crosshair"></div>
+
+    <!-- top HUD -->
+    <div id="hud-top">
+      <div class="hud-stat"><span class="hud-label">SCORE</span><span id="hud-score" class="hud-value">0</span></div>
+      <div class="hud-stat"><span class="hud-label">HEIGHT</span><span id="hud-height" class="hud-value">0</span></div>
+      <div class="hud-stat"><span class="hud-label">COMBO</span><span id="hud-combo" class="hud-value">x0</span></div>
+      <div class="hud-stat"><span class="hud-label">BEST</span><span id="hud-best" class="hud-value">0</span></div>
+    </div>
+
+    <!-- turn banner (multiplayer) -->
+    <div id="turn-banner" class="turn-banner" style="display:none;"></div>
+
+    <!-- timing minigame -->
+    <div id="timing-ui" class="timing-ui" style="display:none;">
+      <div class="timing-bar">
+        <div id="timing-zone" class="timing-zone"></div>
+        <div id="timing-indicator" class="timing-indicator"></div>
+      </div>
+      <div class="timing-hint">CLICK / TAP IN THE GREEN ZONE</div>
+    </div>
+
+    <!-- carry hint -->
+    <div id="carry-hint" class="carry-hint" style="display:none;">Move mouse to position &middot; Click to place</div>
+
+    <!-- mobile controls -->
+    <div id="mobile-controls" style="display:none;">
+      <div id="joystick-zone" class="joystick-zone">
+        <div id="joystick-thumb" class="joystick-thumb"></div>
+      </div>
+      <button id="mobile-action-btn" class="mobile-action-btn">●</button>
+    </div>
+
+    <!-- pause / exit -->
+    <button id="btn-pause" class="icon-btn">⏸</button>
+    <div id="pause-menu" class="pause-menu" style="display:none;">
+      <div class="panel">
+        <h2>PAUSED</h2>
+        <button class="btn btn-primary" id="btn-resume">RESUME</button>
+        <button class="btn btn-secondary" id="btn-quit-to-menu">QUIT TO MAIN MENU</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================= COLLAPSE / END SCREEN ======================= -->
+  <div id="screen-end" class="screen">
+    <div class="panel end-panel">
+      <h2 id="end-title">TOWER COLLAPSED!</h2>
+      <p id="end-subtitle" class="end-subtitle"></p>
+      <p id="end-height" class="end-height"></p>
+      <div id="end-scoreboard" class="scoreboard"></div>
+      <div class="menu-buttons">
+        <button class="btn btn-primary" id="btn-rematch">REMATCH</button>
+        <button class="btn btn-secondary" id="btn-return-lobby">RETURN TO LOBBY</button>
+        <button class="btn btn-secondary" id="btn-end-main-menu">MAIN MENU</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div id="toast" class="toast"></div>
+
+  <!-- ======================= LIBRARIES ======================= -->
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+      "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/",
+      "cannon-es": "https://unpkg.com/cannon-es@0.20.0/dist/cannon-es.js"
+    }
+  }
+  </script>
+
+  <!-- Firebase (compat build for simplicity with RTDB) -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+
+  <!-- ======================= GAME MODULES ======================= -->
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>
