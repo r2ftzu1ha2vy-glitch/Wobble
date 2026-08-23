@@ -230,6 +230,16 @@ canvas{ display:block; }
 .hud-value{
   display:block; font-family:'Poppins',sans-serif; font-weight:700; font-size:18px; color:var(--text-light);
 }
+.hud-stat-ai{ border-color: rgba(255,150,90,0.25); }
+.ai-indicator{
+  display:inline-block; width:6px; height:6px; border-radius:50%;
+  background: rgba(255,255,255,0.25); margin-left:4px; vertical-align:middle;
+  transition: background 0.2s ease, box-shadow 0.2s ease;
+}
+.ai-indicator.active{
+  background: var(--accent, #e0603f);
+  box-shadow: 0 0 6px 1px var(--accent, #e0603f);
+}
 
 .turn-banner{
   position:absolute; top:80px; left:50%; transform:translateX(-50%);
