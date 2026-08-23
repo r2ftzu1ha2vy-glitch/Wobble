@@ -7,6 +7,7 @@ import { buildScene, buildLighting, buildRoom, animateDust } from "./environment
 import { PlayerController } from "./playerController.js";
 import { TimingGame } from "./timingGame.js";
 import { ScoreTracker } from "./scoring.js";
+import { AiOpponent } from "./aiOpponent.js";
 import { audio } from "./audio.js";
 import { $, clamp, formatNumber } from "./utils.js";
 
@@ -36,6 +37,13 @@ export class SoloGame {
     this.player = new PlayerController(this.camera, canvas, { sensitivity: settings.sensitivity });
     this.timingGame = new TimingGame();
     this.score = new ScoreTracker();
+
+    this.ai = new AiOpponent({
+      tower: this.tower,
+      onScoreChange: (score) => this._updateAiHud(score),
+      onStateChange: (active) => this._setAiIndicator(active)
+    });
+    this._ensureAiHud();
 
     this.raycaster = new THREE.Raycaster();
     this.hoveredBlock = null;
@@ -80,7 +88,7 @@ export class SoloGame {
     if (this.state === "idle") {
       this._tryGrab();
     } else if (this.state === "timing") {
-      this._attemptTiming();
+      this.timingGame.attempt();
     } else if (this.state === "carrying") {
       this._placeBlock();
     }
@@ -178,6 +186,29 @@ export class SoloGame {
     $("hud-best").textContent = String(this.score.best);
   }
 
+  /** Add an "AI" stat block to the HUD the first time a solo game with an AI opponent starts. */
+  _ensureAiHud() {
+    const hudTop = $("hud-top");
+    if (!hudTop || $("hud-ai-score")) return;
+    const stat = document.createElement("div");
+    stat.className = "hud-stat hud-stat-ai";
+    stat.id = "hud-ai-stat";
+    stat.innerHTML =
+      '<span class="hud-label">AI <span id="hud-ai-indicator" class="ai-indicator"></span></span>' +
+      '<span id="hud-ai-score" class="hud-value">0</span>';
+    hudTop.appendChild(stat);
+  }
+
+  _updateAiHud(score) {
+    const el = $("hud-ai-score");
+    if (el) el.textContent = formatNumber(score);
+  }
+
+  _setAiIndicator(active) {
+    const el = $("hud-ai-indicator");
+    if (el) el.classList.toggle("active", !!active);
+  }
+
   _onResize() {
     this.camera.aspect = window.innerWidth / window.innerHeight;
     this.camera.updateProjectionMatrix();
@@ -199,6 +230,7 @@ export class SoloGame {
     }
 
     this.player.update(dt);
+    this.ai.update(dt);
     this.world.step(1 / 60, dt, 3);
     this.tower.syncMeshes();
     animateDust(this.dust, dt);
@@ -223,6 +255,7 @@ export class SoloGame {
 
   _handleCollapse() {
     this.state = "collapsed";
+    this.ai.setEnabled(false);
     this.tower.triggerCollapse();
     audio.playCollapse();
     setTimeout(() => {
@@ -236,8 +269,11 @@ export class SoloGame {
 
   destroy() {
     this._running = false;
+    this.ai.setEnabled(false);
     window.removeEventListener("resize", this._onResize);
     this.tower.reset();
     this.renderer.dispose();
+    const aiStat = $("hud-ai-stat");
+    if (aiStat) aiStat.remove();
   }
 }
